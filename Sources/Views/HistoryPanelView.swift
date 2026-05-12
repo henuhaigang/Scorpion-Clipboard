@@ -114,7 +114,7 @@ struct HistoryPanelView: View {
             .background(Color.primary.opacity(0.05))
         } else {
             HStack(spacing: 12) {
-                Label("⌃ + 数字 1-9 粘贴", systemImage: "keyboard")
+                Label("数字 1-9 粘贴", systemImage: "keyboard")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                 Label("点击粘贴", systemImage: "hand.tap")
@@ -232,7 +232,7 @@ struct ClipboardItemRow: View {
     @ViewBuilder
     private var shortcutHint: some View {
         if index <= 9 {
-            Text("⌃\(index % 10)")
+            Text("\(index % 10)")
                 .font(.system(.caption2, design: .rounded, weight: .medium))
                 .foregroundStyle(.tertiary)
                 .padding(.horizontal, 6)

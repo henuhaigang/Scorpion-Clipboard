@@ -19,7 +19,6 @@ final class PanelController {
     }
 
     func toggle() {
-        log("Toggle called, panel visible: \(panel?.isVisible ?? false)")
         if let panel = panel, panel.isVisible {
             close()
         } else {
@@ -28,7 +27,6 @@ final class PanelController {
     }
 
     func show() {
-        log("Show called")
         if panel == nil {
             createPanel()
         }
@@ -37,23 +35,6 @@ final class PanelController {
         panel?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         startMonitors()
-        log("Panel visible: \(panel?.isVisible ?? false)")
-    }
-
-    private func log(_ message: String) {
-        let logPath = "/Volumes/Seagate/workspace/code/Scorpion-Clipboard/debug.log"
-        let logMessage = "[\(Date())] \(message)\n"
-        if let data = logMessage.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: logPath) {
-                if let fileHandle = FileHandle(forWritingAtPath: logPath) {
-                    fileHandle.seekToEndOfFile()
-                    fileHandle.write(data)
-                    fileHandle.closeFile()
-                }
-            } else {
-                try? data.write(to: URL(fileURLWithPath: logPath))
-            }
-        }
     }
 
     func close() {
@@ -66,19 +47,13 @@ final class PanelController {
     private func startMonitors() {
         stopMonitors()
 
-        // Local monitor for events going to our app
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            self?.log("Local event: \(event.keyCode)")
             return self?.handleKeyEvent(event) ?? event
         }
 
-        // Global monitor for events going to other apps (when panel is visible)
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            self?.log("Global event: \(event.keyCode)")
             _ = self?.handleKeyEvent(event)
         }
-
-        log("Monitors started - local: \(localMonitor != nil), global: \(globalMonitor != nil)")
     }
 
     private func stopMonitors() {
@@ -94,15 +69,13 @@ final class PanelController {
 
     private func handleKeyEvent(_ event: NSEvent) -> NSEvent? {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        log("Key event: \(event.keyCode), flags: \(flags.rawValue)")
 
-        // Ctrl + number (1-9, 0)
-        if flags == .control, let chars = event.charactersIgnoringModifiers {
-            log("Ctrl+char detected: \(chars)")
+        // Number keys 1-9, 0 without modifier (when panel is open)
+        if flags.isEmpty || flags == .numericPad,
+           let chars = event.charactersIgnoringModifiers {
             let numbers = "1234567890"
             if let index = numbers.firstIndex(of: Character(chars)) {
                 let position = numbers.distance(from: numbers.startIndex, to: index)
-                // 1→0, 2→1, ..., 9→8, 0→9
                 let itemIndex = position
 
                 if itemIndex < viewModel.filteredItems.count {
