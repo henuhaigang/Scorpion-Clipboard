@@ -52,7 +52,7 @@ final class HistoryStore {
     private func evictBySizeIfNeeded() {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        let maxSize: Int = 1 * 1024 * 1024
+        let maxSize: Int = 100 * 1024 * 1024
         var data = (try? encoder.encode(items)) ?? Data()
         while data.count > maxSize, !items.isEmpty {
             items.removeLast()
