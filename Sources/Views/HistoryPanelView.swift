@@ -15,7 +15,7 @@ struct HistoryPanelView: View {
             footerView
         }
         .frame(width: 380, height: 500)
-        .background(VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow))
+        .background(VisualEffectBlur(material: .sheet, blendingMode: .behindWindow))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.3), radius: 20, y: 10)
     }
@@ -90,14 +90,14 @@ struct HistoryPanelView: View {
                         .onHover { hovering in
                             hoveredItem = hovering ? item : nil
                         }
-                        .id(item.id)
+                        .id(index)
                     }
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
             }
-            .onChange(of: viewModel.selectedRowIndex) { newValue in
-                withAnimation {
+            .onChange(of: viewModel.selectedRowIndex) { _, newValue in
+                withAnimation(.easeInOut(duration: 0.15)) {
                     proxy.scrollTo(newValue, anchor: .center)
                 }
             }
@@ -161,10 +161,6 @@ struct ClipboardItemRow: View {
         .padding(.vertical, 10)
         .background(rowBackground)
         .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
-        )
         .contentShape(Rectangle())
         .onTapGesture { onTap() }
         .help(item.briefText)
@@ -260,9 +256,16 @@ struct ClipboardItemRow: View {
 
     @ViewBuilder
     private var rowBackground: some View {
-        if isHovered {
+        if isSelected {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.accentColor.opacity(0.12))
+                .fill(Color.accentColor.opacity(0.15))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.accentColor.opacity(0.4), lineWidth: 1)
+                )
+        } else if isHovered {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.accentColor.opacity(0.08))
         } else {
             Color.clear
         }

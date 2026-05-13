@@ -12,6 +12,9 @@ let package = Package(
             name: "ClipboardCanvas",
             dependencies: ["KeyboardShortcuts"],
             path: "Sources",
+            resources: [
+                .copy("../Resources/AppIcon.icns")
+            ],
             linkerSettings: [
                 .unsafeFlags(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__info_plist", "-Xlinker", "Info.plist"]),
                 .unsafeFlags(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__entitlements", "-Xlinker", "ClipboardCanvas.entitlements"])

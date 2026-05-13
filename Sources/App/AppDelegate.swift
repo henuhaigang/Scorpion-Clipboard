@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        setupAppIcon()
         setupStatusItem()
         viewModel.startMonitoring()
         shortcutController.register()
@@ -20,6 +21,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Check accessibility permission
         checkAccessibility()
+    }
+
+    private func setupAppIcon() {
+        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns") {
+            let iconImage = NSImage(contentsOf: iconURL)
+            NSApp.applicationIconImage = iconImage
+        }
     }
 
     private func checkAccessibility() {

@@ -98,6 +98,7 @@ swift package clean
 - 忽略列表通过 bundleID 匹配前台应用
 - 模拟粘贴失败时回退为仅写入剪贴板
 
+
 ## 依赖
 
 | 包 | 用途 |

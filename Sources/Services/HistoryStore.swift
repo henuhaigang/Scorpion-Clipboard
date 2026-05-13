@@ -49,8 +49,24 @@ final class HistoryStore {
         }
     }
 
+    private func evictBySizeIfNeeded() {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let maxSize: Int = 1 * 1024 * 1024
+        var data = (try? encoder.encode(items)) ?? Data()
+        while data.count > maxSize, !items.isEmpty {
+            items.removeLast()
+            if let updatedData = try? encoder.encode(items) {
+                data = updatedData
+            } else {
+                break
+            }
+        }
+    }
+
     private func saveToDisk() {
         guard settings.persistAfterRestart else { return }
+        evictBySizeIfNeeded()
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         guard let data = try? encoder.encode(items) else { return }
