@@ -52,7 +52,7 @@ struct HistoryPanelView: View {
             ))
             .textFieldStyle(.plain)
             .font(.callout)
-
+ 
             if !viewModel.searchText.isEmpty {
                 Button {
                     viewModel.updateSearch("")
@@ -80,6 +80,7 @@ struct HistoryPanelView: View {
                         ClipboardItemRow(
                             item: item,
                             index: index + 1,
+                            isSelected: viewModel.selectedRowIndex == index,
                             isHovered: hoveredItem?.id == item.id,
                             onTap: {
                                 viewModel.pasteItem(item)
@@ -94,6 +95,11 @@ struct HistoryPanelView: View {
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
+            }
+            .onChange(of: viewModel.selectedRowIndex) { newValue in
+                withAnimation {
+                    proxy.scrollTo(newValue, anchor: .center)
+                }
             }
         }
     }
@@ -114,7 +120,10 @@ struct HistoryPanelView: View {
             .background(Color.primary.opacity(0.05))
         } else {
             HStack(spacing: 12) {
-                Label("数字 1-9 粘贴", systemImage: "keyboard")
+                Label("↑↓ 选择", systemImage: "arrow.up.arrow.down")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                Label("Enter 粘贴", systemImage: "keyboard")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                 Label("点击粘贴", systemImage: "hand.tap")
@@ -137,6 +146,7 @@ struct HistoryPanelView: View {
 struct ClipboardItemRow: View {
     let item: ClipboardItem
     let index: Int
+    let isSelected: Bool
     let isHovered: Bool
     let onTap: () -> Void
 
@@ -151,6 +161,10 @@ struct ClipboardItemRow: View {
         .padding(.vertical, 10)
         .background(rowBackground)
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+        )
         .contentShape(Rectangle())
         .onTapGesture { onTap() }
         .help(item.briefText)

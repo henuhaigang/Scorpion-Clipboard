@@ -54,6 +54,8 @@ final class PanelController {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             _ = self?.handleKeyEvent(event)
         }
+
+        print("[PanelController] Monitors started: local=\(localMonitor != nil), global=\(globalMonitor != nil)")
     }
 
     private func stopMonitors() {
@@ -67,23 +69,30 @@ final class PanelController {
         }
     }
 
-    private func handleKeyEvent(_ event: NSEvent) -> NSEvent? {
+  private func handleKeyEvent(_ event: NSEvent) -> NSEvent? {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
 
-        // Number keys 1-9, 0 without modifier (when panel is open)
-        if flags.isEmpty || flags == .numericPad,
-           let chars = event.charactersIgnoringModifiers {
-            let numbers = "1234567890"
-            if let index = numbers.firstIndex(of: Character(chars)) {
-                let position = numbers.distance(from: numbers.startIndex, to: index)
-                let itemIndex = position
+        // keyCode mapping for number keys 1-9, 0 on US ANSI keyboard
+        let keyCodeMap: [UInt16: Int] = [
+            0x12: 0,  // 1 -> index 0
+            0x13: 1,  // 2 -> index 1
+            0x14: 2,  // 3 -> index 2
+            0x15: 3,  // 4 -> index 3
+            0x17: 4,  // 5 -> index 4
+            0x16: 5,  // 6 -> index 5
+            0x1A: 6,  // 7 -> index 6
+            0x1C: 7,  // 8 -> index 7
+            0x19: 8,  // 9 -> index 8
+            0x1D: 9,  // 0 -> index 9
+        ]
 
-                if itemIndex < viewModel.filteredItems.count {
-                    let item = viewModel.filteredItems[itemIndex]
-                    pasteAndClose(item)
-                    return nil
-                }
-            }
+        if let itemIndex = keyCodeMap[event.keyCode],
+           flags.isEmpty || flags.contains(.control),
+           itemIndex < viewModel.filteredItems.count {
+            viewModel.selectedRowIndex = itemIndex
+            let item = viewModel.filteredItems[itemIndex]
+            pasteAndClose(item)
+            return nil
         }
 
         // Escape to close
@@ -92,17 +101,42 @@ final class PanelController {
             return nil
         }
 
+        // Up arrow: move selection up
+        if event.keyCode == 126 && !flags.contains(.command) {
+            let count = viewModel.filteredItems.count
+            if count > 0 {
+                viewModel.selectedRowIndex = max(0, viewModel.selectedRowIndex - 1)
+            }
+            return nil
+        }
+
+        // Down arrow: move selection down
+        if event.keyCode == 125 && !flags.contains(.command) {
+            let count = viewModel.filteredItems.count
+            if count > 0 {
+                viewModel.selectedRowIndex = min(count - 1, viewModel.selectedRowIndex + 1)
+            }
+            return nil
+        }
+
+        // Enter: paste selected item
+        if event.keyCode == 36 {
+            let count = viewModel.filteredItems.count
+            if count > 0, viewModel.selectedRowIndex < count {
+                let item = viewModel.filteredItems[viewModel.selectedRowIndex]
+                pasteAndClose(item)
+            } else {
+                close()
+            }
+            return nil
+        }
+
         return event
     }
 
     private func pasteAndClose(_ item: ClipboardItem) {
-        // 1. Hide panel immediately
         close()
-
-        // 2. Wait for panel to hide and system to settle
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.viewModel.restoreFocusAndPaste(item)
-        }
+        viewModel.restoreFocusAndPaste(item)
     }
 
     // MARK: - Panel Creation
