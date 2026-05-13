@@ -28,7 +28,7 @@ final class HistoryViewModel {
             self?.handleNewContent(item)
         }
 
-        // Track activated apps to know which one was before ClipboardCanvas
+        // Track activated apps to know which one was before ScorpionClipboard
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(appActivated(_:)),
@@ -43,7 +43,7 @@ final class HistoryViewModel {
             if app.bundleIdentifier != Bundle.main.bundleIdentifier {
                 lastNonSelfApp = app
             } else {
-                // ClipboardCanvas just became active — save the last non-self app
+                // ScorpionClipboard just became active — save the last non-self app
                 previousApp = lastNonSelfApp
                 print("[ViewModel] Saved previousApp: \(String(describing: previousApp?.localizedName))")
             }

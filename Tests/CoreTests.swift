@@ -1,5 +1,5 @@
 import XCTest
-@testable import ClipboardCanvas
+@testable import ScorpionClipboard
 
 final class CoreTests: XCTestCase {
 

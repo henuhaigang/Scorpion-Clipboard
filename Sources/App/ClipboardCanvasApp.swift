@@ -2,7 +2,7 @@ import KeyboardShortcuts
 import SwiftUI
 
 @main
-struct ClipboardCanvasApp: App {
+struct ScorpionClipboardApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @State private var settings = SettingsModel.shared
@@ -37,7 +37,7 @@ struct ClipboardCanvasApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("ClipboardCanvas", systemImage: "clipboard.fill") {
+        MenuBarExtra("ScorpionClipboard", systemImage: "clipboard.fill") {
             Text("历史记录: \(viewModel.itemCount) 条")
                 .font(.headline)
             Divider()

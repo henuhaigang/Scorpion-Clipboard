@@ -152,7 +152,7 @@ final class PanelController {
         panel.isFloatingPanel = true
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        panel.title = "ClipboardCanvas"
+        panel.title = "ScorpionClipboard"
         panel.titlebarAppearsTransparent = true
         panel.isMovableByWindowBackground = true
 

@@ -27,7 +27,7 @@ struct HistoryPanelView: View {
             Image(systemName: "clipboard.fill")
                 .font(.title3)
                 .foregroundStyle(.secondary)
-            Text("ClipboardCanvas")
+            Text("ScorpionClipboard")
                 .font(.headline)
             Spacer()
             Text("\(viewModel.itemCount) 条记录")

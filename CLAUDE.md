@@ -1,4 +1,4 @@
-# ClipboardCanvas
+# ScorpionClipboard
 
 macOS 原生剪贴板管理器，SwiftUI + AppKit 混合架构。
 
@@ -44,7 +44,7 @@ changeCount 变化 → 获取前台 App → 检查忽略列表
 ```
 Sources/
  ├─ App/
- │   ├─ ClipboardCanvasApp.swift      // @main, MenuBarExtra
+ │   ├─ ScorpionClipboardApp.swift      // @main, MenuBarExtra
  │   └─ AppDelegate.swift             // NSApplicationDelegate
  ├─ Models/
  │   ├─ ClipboardItem.swift           // 数据模型
@@ -71,7 +71,7 @@ Sources/
 swift build
 
 # 运行
-swift run ClipboardCanvas
+swift run ScorpionClipboard
 
 # 清理
 swift package clean

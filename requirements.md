@@ -1,4 +1,4 @@
-# ClipboardCanvas V1 需求规格（冻结）
+# ScorpionClipboard V1 需求规格（冻结）
 
 > 此文档为 V1 版本需求基线，变更需走评审流程。
 

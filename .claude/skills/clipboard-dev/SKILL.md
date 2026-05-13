@@ -1,6 +1,6 @@
 ---
 name: clipboard-dev
-description: Development conventions and patterns for ClipboardCanvas macOS app. Use when writing SwiftUI views, AppKit bridging code, clipboard monitoring, or data models for this project.
+description: Development conventions and patterns for ScorpionClipboard macOS app. Use when writing SwiftUI views, AppKit bridging code, clipboard monitoring, or data models for this project.
 ---
 
 ## SwiftUI Conventions
@@ -32,7 +32,7 @@ description: Development conventions and patterns for ClipboardCanvas macOS app.
 
 ## Persistence
 
-- History: JSON at `~/Library/Application Support/ClipboardCanvas/history.json`
+- History: JSON at `~/Library/Application Support/ScorpionClipboard/history.json`
 - Settings: UserDefaults via `@Observable` wrapper
 - Computed property for storageURL (not `lazy var` — incompatible with `@Observable`)
 

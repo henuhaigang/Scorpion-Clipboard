@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.scorpion.ClipboardCanvas</string>
+	<string>com.scorpion.ScorpionClipboard</string>
 	<key>CFBundleName</key>
-	<string>ClipboardCanvas</string>
+	<string>ScorpionClipboard</string>
 	<key>CFBundleDisplayName</key>
-	<string>ClipboardCanvas</string>
+	<string>ScorpionClipboard</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>

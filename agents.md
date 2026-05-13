@@ -1,4 +1,4 @@
-# ClipboardCanvas 开发代理定义
+# ScorpionClipboard 开发代理定义
 
 ## 代理总览
 

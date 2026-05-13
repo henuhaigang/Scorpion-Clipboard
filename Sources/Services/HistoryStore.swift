@@ -9,7 +9,7 @@ final class HistoryStore {
 
     private var storageURL: URL {
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dir = appSupport.appendingPathComponent("ClipboardCanvas", isDirectory: true)
+        let dir = appSupport.appendingPathComponent("ScorpionClipboard", isDirectory: true)
         try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("history.json")
     }

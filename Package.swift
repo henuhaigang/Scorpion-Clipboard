@@ -2,14 +2,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "ClipboardCanvas",
+    name: "ScorpionClipboard",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/sindresorhus/KeyboardShortcuts.git", from: "2.0.0")
     ],
     targets: [
         .executableTarget(
-            name: "ClipboardCanvas",
+            name: "ScorpionClipboard",
             dependencies: ["KeyboardShortcuts"],
             path: "Sources",
             resources: [
@@ -17,12 +17,12 @@ let package = Package(
             ],
             linkerSettings: [
                 .unsafeFlags(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__info_plist", "-Xlinker", "Info.plist"]),
-                .unsafeFlags(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__entitlements", "-Xlinker", "ClipboardCanvas.entitlements"])
+                .unsafeFlags(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__entitlements", "-Xlinker", "ScorpionClipboard.entitlements"])
             ]
         ),
         .testTarget(
-            name: "ClipboardCanvasTests",
-            dependencies: ["ClipboardCanvas"],
+            name: "ScorpionClipboardTests",
+            dependencies: ["ScorpionClipboard"],
             path: "Tests"
         )
     ]

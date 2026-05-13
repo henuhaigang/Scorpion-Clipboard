@@ -32,14 +32,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func checkAccessibility() {
         let trusted = AXIsProcessTrusted()
-        print("[ClipboardCanvas] Accessibility permission: \(trusted ? "GRANTED" : "NOT GRANTED")")
+        print("[ScorpionClipboard] Accessibility permission: \(trusted ? "GRANTED" : "NOT GRANTED")")
 
         if !trusted {
             // Show alert after a short delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 let alert = NSAlert()
                 alert.messageText = "需要辅助功能权限"
-                alert.informativeText = "ClipboardCanvas 需要辅助功能权限才能自动粘贴内容。\n\n请在系统设置中授权：\n隐私与安全性 → 辅助功能 → 添加 ClipboardCanvas"
+                alert.informativeText = "ScorpionClipboard 需要辅助功能权限才能自动粘贴内容。\n\n请在系统设置中授权：\n隐私与安全性 → 辅助功能 → 添加 ScorpionClipboard"
                 alert.alertStyle = .informational
                 alert.addButton(withTitle: "打开设置")
                 alert.addButton(withTitle: "稍后再说")
@@ -60,7 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         guard let button = statusItem?.button else { return }
-        button.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "ClipboardCanvas")
+        button.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "ScorpionClipboard")
         button.title = " \(viewModel.itemCount)"
 
         let menu = NSMenu()
@@ -97,7 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        let quitItem = NSMenuItem(title: "退出 ClipboardCanvas", action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "退出 ScorpionClipboard", action: #selector(quit), keyEquivalent: "q")
         quitItem.keyEquivalentModifierMask = [.command]
         quitItem.target = self
         menu.addItem(quitItem)
