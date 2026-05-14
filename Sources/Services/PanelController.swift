@@ -30,6 +30,7 @@ final class PanelController {
         if panel == nil {
             createPanel()
         }
+        // Save previous app BEFORE activating ourselves
         viewModel.savePreviousApp()
         positionPanel()
         panel?.makeKeyAndOrderFront(nil)

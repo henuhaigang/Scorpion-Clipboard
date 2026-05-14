@@ -34,6 +34,77 @@ swift run ScorpionClipboard
 4. 点击条目也可粘贴
 5. 偏好设置中可配置快捷键、历史上限等
 
+## 打包分发
+
+```bash
+# 1. 编译 Release 版本
+swift build -c release --arch arm64
+
+# 2. 创建 .app 目录结构
+rm -rf /tmp/ScorpionClipboard.app
+mkdir -p /tmp/ScorpionClipboard.app/Contents/MacOS
+mkdir -p /tmp/ScorpionClipboard.app/Contents/Resources
+cp .build/arm64-apple-macosx/release/ScorpionClipboard /tmp/ScorpionClipboard.app/Contents/MacOS/
+cp Resources/AppIcon.icns /tmp/ScorpionClipboard.app/Contents/Resources/
+
+# 3. 创建 Info.plist
+cat > /tmp/ScorpionClipboard.app/Contents/Info.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>ScorpionClipboard</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.scorpion.ScorpionClipboard</string>
+    <key>CFBundleName</key>
+    <string>ScorpionClipboard</string>
+    <key>CFBundleDisplayName</key>
+    <string>ScorpionClipboard</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+</dict>
+</plist>
+EOF
+
+# 4. 创建 Entitlements
+cat > /tmp/scorpion-entitlements.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+</dict>
+</plist>
+EOF
+
+# 5. Ad-hoc 签名
+codesign --force --sign - --entitlements /tmp/scorpion-entitlements.plist /tmp/ScorpionClipboard.app
+
+# 6. 打包 DMG
+rm -rf /tmp/dmg-content
+mkdir -p /tmp/dmg-content
+cp -R /tmp/ScorpionClipboard.app /tmp/dmg-content/
+ln -sf /Applications /tmp/dmg-content/Applications
+hdiutil create -volname "ScorpionClipboard" -srcfolder /tmp/dmg-content -ov -format UDZO /tmp/ScorpionClipboard-1.0.dmg
+
+# 输出文件：/tmp/ScorpionClipboard-1.0.dmg
+```
+
+> **注意**：Ad-hoc 签名（`--sign -`）的 app 无法通过 Gatekeeper，首次打开需右键 → "打开"。
+> 自动粘贴需要前往 **系统设置 → 隐私与安全性 → 辅助功能** 中授权。
+
 ## 已知问题
 
 - 自动粘贴（模拟 Cmd+V）在部分应用中不生效，需手动按 Cmd+V

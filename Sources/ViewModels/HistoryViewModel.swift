@@ -77,8 +77,30 @@ final class HistoryViewModel {
     }
 
     func savePreviousApp() {
-        // previousApp is already set by appActivated notification observer
-        print("[ViewModel] savePreviousApp: previousApp=\(String(describing: previousApp?.localizedName))")
+        let ourBundleId = Bundle.main.bundleIdentifier ?? ""
+        print("[ViewModel] savePreviousApp: ourBundleId=\(ourBundleId)")
+
+        // Strategy 1: Get current frontmost app directly (before we activate ourselves)
+        if let frontmost = NSWorkspace.shared.frontmostApplication,
+           frontmost.bundleIdentifier != ourBundleId {
+            previousApp = frontmost
+            print("[ViewModel] savePreviousApp: captured frontmost=\(String(describing: previousApp?.localizedName))")
+            return
+        }
+
+        // Strategy 2: Look through running apps for the most recently active non-self app
+        let apps = NSWorkspace.shared.runningApplications
+        for app in apps.reversed() {
+            if app.activationPolicy == .regular,
+               app.bundleIdentifier != ourBundleId,
+               app.localizedName != nil {
+                previousApp = app
+                print("[ViewModel] savePreviousApp: fallback to app=\(String(describing: app.localizedName))")
+                return
+            }
+        }
+
+        print("[ViewModel] savePreviousApp: no suitable app found")
     }
 
     func pasteItem(_ item: ClipboardItem) {
@@ -86,28 +108,50 @@ final class HistoryViewModel {
         writeToPasteboard(item)
 
         let hasAccessibility = AXIsProcessTrusted()
-        if hasAccessibility {
-            if let app = previousApp {
-                app.activate()
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                guard let self = self else { return }
-                if let prev = self.previousApp,
-                   NSWorkspace.shared.frontmostApplication != prev {
-                    prev.activate()
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                    self?.simulatePaste()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        self?.pasteboardMonitor.resume()
-                    }
-                }
-            }
-        } else {
+        if !hasAccessibility {
             statusMessage = "已复制到剪贴板 (需要辅助功能权限才能自动粘贴)"
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
                 self?.pasteboardMonitor.resume()
                 self?.statusMessage = nil
+            }
+            return
+        }
+
+        guard let targetApp = previousApp else {
+            simulatePaste()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                self?.pasteboardMonitor.resume()
+            }
+            return
+        }
+
+        targetApp.activate(options: .activateAllWindows)
+        print("[ViewModel] pasteItem: activating \(String(describing: targetApp.localizedName))")
+
+        Task { [weak self, targetApp] in
+            guard let self else { return }
+            var didPaste = false
+            let maxAttempts = 16
+            for attempt in 0..<maxAttempts {
+                try? await Task.sleep(for: .milliseconds(50))
+                await MainActor.run {
+                    guard !didPaste else { return }
+                    if NSWorkspace.shared.frontmostApplication == targetApp {
+                        didPaste = true
+                        print("[ViewModel] pasteItem: \(String(describing: targetApp.localizedName)) is frontmost after \(attempt + 1) attempts")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                            self?.simulatePaste()
+                            self?.pasteboardMonitor.resume()
+                        }
+                    }
+                }
+                if didPaste { break }
+            }
+            guard !didPaste else { return }
+            print("[ViewModel] pasteItem: timeout waiting for \(String(describing: targetApp.localizedName)), pasting anyway")
+            await MainActor.run {
+                self.simulatePaste()
+                self.pasteboardMonitor.resume()
             }
         }
     }
@@ -116,24 +160,42 @@ final class HistoryViewModel {
         pasteboardMonitor.pause()
         writeToPasteboard(item)
 
-        if let app = previousApp {
-            app.activate()
+        guard let targetApp = previousApp else {
+            simulatePaste()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                self?.pasteboardMonitor.resume()
+            }
+            return
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            guard let self = self else { return }
+        // Activate target app and wait until it's confirmed frontmost
+        targetApp.activate(options: .activateAllWindows)
+        print("[ViewModel] restoreFocusAndPaste: activating \(String(describing: targetApp.localizedName))")
 
-            if let prev = self.previousApp,
-               NSWorkspace.shared.frontmostApplication != prev {
-                prev.activate()
-            }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                self?.simulatePaste()
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    self?.pasteboardMonitor.resume()
+        Task { [weak self, targetApp] in
+            guard let self else { return }
+            var didPaste = false
+            let maxAttempts = 16
+            for attempt in 0..<maxAttempts {
+                try? await Task.sleep(for: .milliseconds(50))
+                await MainActor.run {
+                    guard !didPaste else { return }
+                    if NSWorkspace.shared.frontmostApplication == targetApp {
+                        didPaste = true
+                        print("[ViewModel] restoreFocusAndPaste: \(String(describing: targetApp.localizedName)) is frontmost after \(attempt + 1) attempts")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                            self?.simulatePaste()
+                            self?.pasteboardMonitor.resume()
+                        }
+                    }
                 }
+                if didPaste { break }
+            }
+            guard !didPaste else { return }
+            print("[ViewModel] restoreFocusAndPaste: timeout waiting for \(String(describing: targetApp.localizedName)), pasting anyway")
+            await MainActor.run {
+                self.simulatePaste()
+                self.pasteboardMonitor.resume()
             }
         }
     }
@@ -183,28 +245,37 @@ final class HistoryViewModel {
             print("[ViewModel] simulatePaste: no frontmost app")
             return
         }
-        print("[ViewModel] simulatePaste: target=\(String(describing: frontmost.localizedName)), axTrusted=\(AXIsProcessTrusted())")
+        let pid = frontmost.processIdentifier
+        print("[ViewModel] simulatePaste: target=\(String(describing: frontmost.localizedName)) pid=\(pid), axTrusted=\(AXIsProcessTrusted())")
 
-        // Method 1: Try CGEvent with .cgAnnotatedSessionEventTap (higher level, more reliable for local apps)
-        let source = CGEventSource(stateID: .combinedSessionState)
-        let vKey: CGKeyCode = 0x09
-
-        if let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true) {
-            keyDown.flags = .maskCommand
-            keyDown.post(tap: .cgAnnotatedSessionEventTap)
-            print("[ViewModel] simulatePaste: posted Cmd+V keyDown (session tap)")
-
-            Thread.sleep(forTimeInterval: 0.05)
-
-            if let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false) {
-                keyUp.flags = .maskCommand
-                keyUp.post(tap: .cgAnnotatedSessionEventTap)
-                print("[ViewModel] simulatePaste: posted Cmd+V keyUp (session tap)")
-            } else {
-                print("[ViewModel] simulatePaste: failed to create keyUp")
+        guard AXIsProcessTrusted() else {
+            print("[ViewModel] simulatePaste: Accessibility not granted")
+            statusMessage = "已复制到剪贴板，请按 ⌘V 粘贴"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                self?.statusMessage = nil
             }
-        } else {
-            print("[ViewModel] simulatePaste: failed to create keyDown")
+            return
         }
+
+        let vKey: CGKeyCode = 0x09
+        let source = CGEventSource(stateID: .privateState)
+
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true) else {
+            print("[ViewModel] simulatePaste: failed to create keyDown")
+            return
+        }
+        keyDown.flags = .maskCommand
+        keyDown.postToPid(pid)
+        print("[ViewModel] simulatePaste: posted Cmd+V keyDown to pid \(pid)")
+
+        usleep(50000)
+
+        guard let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false) else {
+            print("[ViewModel] simulatePaste: failed to create keyUp")
+            return
+        }
+        keyUp.flags = .maskCommand
+        keyUp.postToPid(pid)
+        print("[ViewModel] simulatePaste: posted Cmd+V keyUp to pid \(pid)")
     }
 }
