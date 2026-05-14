@@ -90,15 +90,17 @@ struct HistoryPanelView: View {
                         .onHover { hovering in
                             hoveredItem = hovering ? item : nil
                         }
-                        .id(index)
+                        .id(item.id)
                     }
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
             }
             .onChange(of: viewModel.selectedRowIndex) { _, newValue in
+                guard newValue >= 0, newValue < viewModel.filteredItems.count else { return }
+                let targetId = viewModel.filteredItems[newValue].id
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    proxy.scrollTo(newValue, anchor: .center)
+                    proxy.scrollTo(targetId, anchor: .center)
                 }
             }
         }
