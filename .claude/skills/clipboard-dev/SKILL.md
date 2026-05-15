@@ -28,7 +28,7 @@ description: Development conventions and patterns for ScorpionClipboard macOS ap
 
 - `ClipboardItem`: Codable, Identifiable, Hashable
 - Dedup by moving existing item to front, not adding duplicate
-- Image thumbnails: 100px, store as PNG Data
+- Image thumbnails: 100px, store as TIFF Data (tiffRepresentation)
 
 ## Persistence
 

@@ -16,13 +16,13 @@ macOS 原生剪贴板管理器，SwiftUI + AppKit 混合架构。
 ## 架构
 
 ```
-ClipboardManager (单例)
- ├─ PasteboardMonitor        // 0.5s 轮询 changeCount
- ├─ HistoryStore             // 内存数组 + 磁盘持久化
- ├─ IgnoreListManager        // 前台 App 过滤
- ├─ ShortcutController       // 全局快捷键注册
- ├─ PanelController          // 悬浮窗生命周期
- └─ ViewModel (Observable)   // 面板数据绑定
+PasteboardMonitor        // 0.5s 轮询 changeCount
+HistoryStore             // 内存数组 + 磁盘持久化
+IgnoreListManager        // 前台 App 过滤
+ShortcutController       // 全局快捷键注册
+PanelController          // 悬浮窗生命周期
+HistoryViewModel         // 面板数据绑定 (Observable)
+SettingsModel            // UserDefaults 设置 (Observable)
 ```
 
 ## 数据流
@@ -53,15 +53,13 @@ Sources/
  │   ├─ PasteboardMonitor.swift       // 剪贴板轮询
  │   ├─ HistoryStore.swift            // 历史存储
  │   ├─ IgnoreListManager.swift       // 忽略列表
+ │   ├─ ShortcutController.swift      // 快捷键管理
  │   └─ PanelController.swift         // 窗口管理
  ├─ ViewModels/
  │   └─ HistoryViewModel.swift        // 面板数据
- ├─ Views/
- │   ├─ HistoryPanelView.swift        // 主面板
- │   ├─ SettingsView.swift            // 偏好设置
- │   └─ Components/                   // 复用组件
- └─ Extensions/
-     └─ NSPasteboard+.swift           // 扩展方法
+ └─ Views/
+     ├─ HistoryPanelView.swift        // 主面板（含 ClipboardItemRow）
+     └─ SettingsView.swift            // 偏好设置
 ```
 
 ## 开发命令
@@ -98,6 +96,61 @@ swift package clean
 - 忽略列表通过 bundleID 匹配前台应用
 - 模拟粘贴失败时回退为仅写入剪贴板
 
+
+## 角色分工
+
+| 角色 | 职责 | 对应文件 |
+|------|------|----------|
+| Architect | 架构设计、模块边界、接口契约、代码审查 | — |
+| Backend | PasteboardMonitor、HistoryStore、IgnoreListManager、数据模型 | Services/, Models/ |
+| UI | HistoryPanelView、SettingsView、HistoryViewModel、键盘事件 | Views/, ViewModels/ |
+| Integration | PanelController、CGEvent、NSStatusItem、快捷键注册 | PanelController.swift, ShortcutController.swift |
+| QA | 功能验证、边界测试、性能检查 | — |
+
+### Backend 核心 API
+
+```swift
+// HistoryStore
+func add(_ item: ClipboardItem)
+func remove(at index: Int)
+func clear()
+var items: [ClipboardItem] { get }
+var count: Int { get }
+
+// PasteboardMonitor
+func start()
+func stop()
+func pause()
+func resume()
+var onNewContent: ((ClipboardItem) -> Void)? { get set }
+```
+
+### UI 规范
+
+- 跟随系统明暗模式
+- 图片缩略图 100px
+- 文本截断 200 字符
+- 搜索框实时过滤（防抖 200ms）
+- ClipboardItemRow 内联定义在 HistoryPanelView.swift 中
+
+### Integration 权限需求
+
+- Accessibility 权限（模拟按键）
+- 可能需要 Screen Recording（读取其他 App 剪贴板）
+
+### QA 测试场景
+
+| 场景 | 预期 |
+|------|------|
+| 复制纯文本 | 历史记录新增一条 |
+| 复制图片 | 生成缩略图，历史新增 |
+| 连续复制相同内容 | 去重，不重复添加 |
+| 历史超过上限 | 自动淘汰最旧条目 |
+| 在忽略应用中复制 | 不记录 |
+| 按数字键 1-0 | 粘贴对应序号条目到前台 |
+| 面板失焦 | 自动隐藏 |
+| 自动执行 Cmd+V | 自动粘贴 |
+| 重启后 | 根据设置决定是否保留历史 |
 
 ## 依赖
 
