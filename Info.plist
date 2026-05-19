@@ -2,12 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleExecutable</key>
+	<string>ScorpionClipboard</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.scorpion.ScorpionClipboard</string>
 	<key>CFBundleName</key>
 	<string>ScorpionClipboard</string>
 	<key>CFBundleDisplayName</key>
 	<string>ScorpionClipboard</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>
