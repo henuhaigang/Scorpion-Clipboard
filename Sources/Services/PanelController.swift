@@ -73,7 +73,6 @@ final class PanelController {
   private func handleKeyEvent(_ event: NSEvent) -> NSEvent? {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
 
-        // If a text field is focused, only intercept Escape and number keys with Cmd
         let isTextFieldFocused = panel?.firstResponder is NSTextView
 
         // Escape to close (always intercept)
@@ -82,8 +81,8 @@ final class PanelController {
             return nil
         }
 
-        // When text field is focused, don't intercept typing keys
-        if isTextFieldFocused {
+        // When text field is focused, only let Delete/Backspace pass through for text editing
+        if isTextFieldFocused && (event.keyCode == 51 || event.keyCode == 117) {
             return event
         }
 
