@@ -100,12 +100,16 @@ final class PanelController {
             0x1D: 9,  // 0 -> index 9
         ]
 
-        if let itemIndex = keyCodeMap[event.keyCode],
-           flags.contains(.control),
-           itemIndex < viewModel.filteredItems.count {
-            viewModel.selectedRowIndex = itemIndex
-            let item = viewModel.filteredItems[itemIndex]
-            pasteAndClose(item)
+        if let itemIndex = keyCodeMap[event.keyCode] {
+            if flags.contains(.control), itemIndex < viewModel.filteredItems.count {
+                viewModel.selectedRowIndex = itemIndex
+                let item = viewModel.filteredItems[itemIndex]
+                pasteAndClose(item)
+                return nil
+            }
+            if isTextFieldFocused {
+                return event
+            }
             return nil
         }
 
