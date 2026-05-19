@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var settings: SettingsModel!
 
     private var statusItem: NSStatusItem?
+    private var countItem: NSMenuItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupAppIcon()
@@ -79,6 +80,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let countItem = NSMenuItem(title: "历史记录: \(viewModel.itemCount) 条", action: nil, keyEquivalent: "")
         countItem.isEnabled = false
         menu.addItem(countItem)
+        self.countItem = countItem
 
         menu.addItem(NSMenuItem.separator())
 
@@ -136,5 +138,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func updateStatusTitle() {
         statusItem?.button?.title = " \(viewModel.itemCount)"
+        countItem?.title = "历史记录: \(viewModel.itemCount) 条"
     }
 }

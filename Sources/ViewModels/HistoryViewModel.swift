@@ -232,6 +232,7 @@ final class HistoryViewModel {
         guard !ignoreListManager.isCurrentAppIgnored() else { return }
         Task { @MainActor in
             historyStore.add(item)
+            onItemsChanged?()
         }
     }
 
