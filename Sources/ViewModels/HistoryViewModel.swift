@@ -258,8 +258,11 @@ final class HistoryViewModel {
         }
 
         let vKey: CGKeyCode = 0x09
+        let source = CGEventSource(stateID: .combinedSessionState)
+        source?.setLocalEventsFilterDuringSuppressionState([.permitLocalMouseEvents, .permitSystemDefinedEvents], state: .eventSuppressionStateSuppressionInterval)
+        source?.setLocalEventsFilterDuringSuppressionState([.permitLocalMouseEvents, .permitSystemDefinedEvents], state: .eventSuppressionStateSuppressionInterval)
 
-        guard let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: vKey, keyDown: true) else {
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true) else {
             print("[ViewModel] simulatePaste: failed to create keyDown")
             return
         }
@@ -269,7 +272,7 @@ final class HistoryViewModel {
 
         usleep(50000)
 
-        guard let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: vKey, keyDown: false) else {
+        guard let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false) else {
             print("[ViewModel] simulatePaste: failed to create keyUp")
             return
         }
