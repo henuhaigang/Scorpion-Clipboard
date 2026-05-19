@@ -131,29 +131,7 @@ final class HistoryViewModel {
 
         Task { [weak self, targetApp] in
             guard let self else { return }
-            var didPaste = false
-            let maxAttempts = 16
-            for attempt in 0..<maxAttempts {
-                try? await Task.sleep(for: .milliseconds(50))
-                await MainActor.run {
-                    guard !didPaste else { return }
-                    if NSWorkspace.shared.frontmostApplication == targetApp {
-                        didPaste = true
-                        print("[ViewModel] pasteItem: \(String(describing: targetApp.localizedName)) is frontmost after \(attempt + 1) attempts")
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                            self?.simulatePaste()
-                            self?.pasteboardMonitor.resume()
-                        }
-                    }
-                }
-                if didPaste { break }
-            }
-            guard !didPaste else { return }
-            print("[ViewModel] pasteItem: timeout waiting for \(String(describing: targetApp.localizedName)), pasting anyway")
-            await MainActor.run {
-                self.simulatePaste()
-                self.pasteboardMonitor.resume()
-            }
+            await self.waitAndPaste(targetApp: targetApp, label: "pasteItem")
         }
     }
 
@@ -175,29 +153,7 @@ final class HistoryViewModel {
 
         Task { [weak self, targetApp] in
             guard let self else { return }
-            var didPaste = false
-            let maxAttempts = 16
-            for attempt in 0..<maxAttempts {
-                try? await Task.sleep(for: .milliseconds(50))
-                await MainActor.run {
-                    guard !didPaste else { return }
-                    if NSWorkspace.shared.frontmostApplication == targetApp {
-                        didPaste = true
-                        print("[ViewModel] restoreFocusAndPaste: \(String(describing: targetApp.localizedName)) is frontmost after \(attempt + 1) attempts")
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                            self?.simulatePaste()
-                            self?.pasteboardMonitor.resume()
-                        }
-                    }
-                }
-                if didPaste { break }
-            }
-            guard !didPaste else { return }
-            print("[ViewModel] restoreFocusAndPaste: timeout waiting for \(String(describing: targetApp.localizedName)), pasting anyway")
-            await MainActor.run {
-                self.simulatePaste()
-                self.pasteboardMonitor.resume()
-            }
+            await self.waitAndPaste(targetApp: targetApp, label: "restoreFocusAndPaste")
         }
     }
 
@@ -251,6 +207,25 @@ final class HistoryViewModel {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.statusMessage = nil
         }
+    }
+
+    @MainActor
+    private func waitAndPaste(targetApp: NSRunningApplication, label: String) async {
+        let maxAttempts = 16
+        for attempt in 0..<maxAttempts {
+            try? await Task.sleep(for: .milliseconds(50))
+            if NSWorkspace.shared.frontmostApplication == targetApp {
+                print("[ViewModel] \(label): \(String(describing: targetApp.localizedName)) is frontmost after \(attempt + 1) attempts")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                    self?.simulatePaste()
+                    self?.pasteboardMonitor.resume()
+                }
+                return
+            }
+        }
+        print("[ViewModel] \(label): timeout waiting for \(String(describing: targetApp.localizedName)), pasting anyway")
+        simulatePaste()
+        pasteboardMonitor.resume()
     }
 
     private func handleNewContent(_ item: ClipboardItem) {
