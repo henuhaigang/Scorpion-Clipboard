@@ -184,7 +184,7 @@ struct ClipboardItemRow: View {
                 Label("忽略当前应用", systemImage: "eye.slash")
             }
         }
-        .help(item.briefText)
+        .help(item.fullText ?? item.briefText)
     }
 
     // MARK: - Index Badge

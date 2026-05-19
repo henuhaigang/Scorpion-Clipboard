@@ -53,8 +53,12 @@ final class HistoryViewModel {
 
     var filteredItems: [ClipboardItem] {
         guard !searchText.isEmpty else { return historyStore.items }
-        return historyStore.items.filter {
-            $0.briefText.localizedCaseInsensitiveContains(searchText)
+        let query = searchText.lowercased()
+        return historyStore.items.filter { item in
+            if item.briefText.lowercased().contains(query) { return true }
+            if let fullText = item.fullText, fullText.lowercased().contains(query) { return true }
+            if let path = item.filePath, path.lowercased().contains(query) { return true }
+            return false
         }
     }
 
@@ -165,7 +169,7 @@ final class HistoryViewModel {
         case .text:
             pasteboard.setString(item.briefText, forType: .string)
         case .rtf:
-            if let data = item.rawData {
+            if let data = item.rtfData {
                 pasteboard.setData(data, forType: .rtf)
             }
         case .image:

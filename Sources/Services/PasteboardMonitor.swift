@@ -73,17 +73,21 @@ final class PasteboardMonitor {
 
         if types.contains(.rtf), let data = pasteboard.data(forType: .rtf) {
             let text = pasteboard.string(forType: .string) ?? ""
+            let fullTextData = text.data(using: .utf8)
             return ClipboardItem(
                 type: .rtf,
                 briefText: String(text.prefix(200)),
-                rawData: data
+                rawData: fullTextData,
+                rtfData: data
             )
         }
 
         if types.contains(.string), let text = pasteboard.string(forType: .string) {
+            let fullTextData = text.data(using: .utf8)
             return ClipboardItem(
                 type: .text,
-                briefText: String(text.prefix(200))
+                briefText: String(text.prefix(200)),
+                rawData: fullTextData
             )
         }
 

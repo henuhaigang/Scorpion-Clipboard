@@ -13,6 +13,7 @@ struct ClipboardItem: Codable, Identifiable, Hashable {
     let timestamp: Date
     let briefText: String
     let rawData: Data?
+    let rtfData: Data?
     let thumbnailData: Data?
     let filePath: String?
 
@@ -22,6 +23,7 @@ struct ClipboardItem: Codable, Identifiable, Hashable {
         timestamp: Date = Date(),
         briefText: String,
         rawData: Data? = nil,
+        rtfData: Data? = nil,
         thumbnailData: Data? = nil,
         filePath: String? = nil
     ) {
@@ -30,6 +32,7 @@ struct ClipboardItem: Codable, Identifiable, Hashable {
         self.timestamp = timestamp
         self.briefText = briefText
         self.rawData = rawData
+        self.rtfData = rtfData
         self.thumbnailData = thumbnailData
         self.filePath = filePath
     }
@@ -42,6 +45,11 @@ extension ClipboardItem {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+
+    var fullText: String? {
+        guard let data = rawData else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 
     var isDuplicateOf: (ClipboardItem) -> Bool {

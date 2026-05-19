@@ -73,6 +73,20 @@ final class PanelController {
   private func handleKeyEvent(_ event: NSEvent) -> NSEvent? {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
 
+        // If a text field is focused, only intercept Escape and number keys with Cmd
+        let isTextFieldFocused = panel?.firstResponder is NSTextView
+
+        // Escape to close (always intercept)
+        if event.keyCode == 53 {
+            close()
+            return nil
+        }
+
+        // When text field is focused, don't intercept typing keys
+        if isTextFieldFocused {
+            return event
+        }
+
         // keyCode mapping for number keys 1-9, 0 on US ANSI keyboard
         let keyCodeMap: [UInt16: Int] = [
             0x12: 0,  // 1 -> index 0
@@ -93,12 +107,6 @@ final class PanelController {
             viewModel.selectedRowIndex = itemIndex
             let item = viewModel.filteredItems[itemIndex]
             pasteAndClose(item)
-            return nil
-        }
-
-        // Escape to close
-        if event.keyCode == 53 {
-            close()
             return nil
         }
 
