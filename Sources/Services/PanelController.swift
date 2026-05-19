@@ -101,7 +101,7 @@ final class PanelController {
         ]
 
         if let itemIndex = keyCodeMap[event.keyCode],
-           flags.isEmpty || flags.contains(.control),
+           flags.contains(.control),
            itemIndex < viewModel.filteredItems.count {
             viewModel.selectedRowIndex = itemIndex
             let item = viewModel.filteredItems[itemIndex]
@@ -157,8 +157,10 @@ final class PanelController {
     }
 
     private func pasteAndClose(_ item: ClipboardItem) {
-        close()
         viewModel.restoreFocusAndPaste(item)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            self?.close()
+        }
     }
 
     // MARK: - Panel Creation

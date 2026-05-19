@@ -257,25 +257,13 @@ final class HistoryViewModel {
             return
         }
 
-        let vKey: CGKeyCode = 0x09
-        let source = CGEventSource(stateID: .privateState)
-
-        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true) else {
-            print("[ViewModel] simulatePaste: failed to create keyDown")
-            return
+        let script = NSAppleScript(source: "tell application \"System Events\" to keystroke \"v\" using command down")
+        var error: NSDictionary?
+        script?.executeAndReturnError(&error)
+        if let error = error {
+            print("[ViewModel] simulatePaste: AppleScript error: \(error)")
+        } else {
+            print("[ViewModel] simulatePaste: AppleScript Cmd+V sent")
         }
-        keyDown.flags = .maskCommand
-        keyDown.postToPid(pid)
-        print("[ViewModel] simulatePaste: posted Cmd+V keyDown to pid \(pid)")
-
-        usleep(50000)
-
-        guard let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false) else {
-            print("[ViewModel] simulatePaste: failed to create keyUp")
-            return
-        }
-        keyUp.flags = .maskCommand
-        keyUp.postToPid(pid)
-        print("[ViewModel] simulatePaste: posted Cmd+V keyUp to pid \(pid)")
     }
 }

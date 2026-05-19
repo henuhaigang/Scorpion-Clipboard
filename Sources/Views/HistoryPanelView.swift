@@ -124,13 +124,13 @@ struct HistoryPanelView: View {
             .background(Color.primary.opacity(0.05))
         } else {
             HStack(spacing: 12) {
+                Label("⌃+数字 粘贴", systemImage: "keyboard")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
                 Label("↑↓ 选择", systemImage: "arrow.up.arrow.down")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
-                Label("Enter 粘贴", systemImage: "keyboard")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                Label("点击粘贴", systemImage: "hand.tap")
+                Label("Enter 粘贴", systemImage: "hand.tap")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                 Spacer()
