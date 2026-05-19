@@ -10,6 +10,7 @@ final class HistoryViewModel {
     var searchText: String = ""
     var statusMessage: String?
     var selectedRowIndex: Int = 0
+    var onItemsChanged: (() -> Void)?
     private var searchTask: Task<Void, Never>?
 
     private var previousApp: NSRunningApplication?
@@ -226,11 +227,30 @@ final class HistoryViewModel {
     func deleteItem(_ item: ClipboardItem) {
         if let index = historyStore.items.firstIndex(where: { $0.id == item.id }) {
             historyStore.remove(at: index)
+            onItemsChanged?()
         }
     }
 
     func clearHistory() {
         historyStore.clear()
+        onItemsChanged?()
+    }
+
+    func ignoreCurrentApp() {
+        guard let frontmost = NSWorkspace.shared.frontmostApplication,
+              let bundleID = frontmost.bundleIdentifier else {
+            statusMessage = "无法获取当前应用信息"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.statusMessage = nil
+            }
+            return
+        }
+        ignoreListManager.addIgnoredApp(bundleID)
+        let appName = frontmost.localizedName ?? bundleID
+        statusMessage = "已添加 \(appName) 到忽略列表"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            self?.statusMessage = nil
+        }
     }
 
     private func handleNewContent(_ item: ClipboardItem) {

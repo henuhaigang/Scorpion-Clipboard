@@ -120,6 +120,20 @@ final class PanelController {
             return nil
         }
 
+        // Delete/Backspace: delete selected item
+        if event.keyCode == 51 || event.keyCode == 117 {
+            let count = viewModel.filteredItems.count
+            if count > 0, viewModel.selectedRowIndex < count {
+                let item = viewModel.filteredItems[viewModel.selectedRowIndex]
+                viewModel.deleteItem(item)
+                let remaining = viewModel.filteredItems.count
+                if remaining > 0 {
+                    viewModel.selectedRowIndex = min(viewModel.selectedRowIndex, remaining - 1)
+                }
+            }
+            return nil
+        }
+
         // Enter: paste selected item
         if event.keyCode == 36 {
             let count = viewModel.filteredItems.count

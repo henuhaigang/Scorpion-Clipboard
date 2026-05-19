@@ -14,6 +14,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupAppIcon()
         setupStatusItem()
         viewModel.startMonitoring()
+        viewModel.onItemsChanged = { [weak self] in
+            self?.updateStatusTitle()
+        }
         shortcutController.register()
         shortcutController.onToggle = { [weak self] in
             self?.panelController.toggle()

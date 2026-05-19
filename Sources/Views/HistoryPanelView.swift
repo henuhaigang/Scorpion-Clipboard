@@ -85,7 +85,9 @@ struct HistoryPanelView: View {
                             onTap: {
                                 viewModel.pasteItem(item)
                                 onDismiss()
-                            }
+                            },
+                            onDelete: { viewModel.deleteItem(item) },
+                            onIgnoreApp: { viewModel.ignoreCurrentApp() }
                         )
                         .onHover { hovering in
                             hoveredItem = hovering ? item : nil
@@ -151,6 +153,8 @@ struct ClipboardItemRow: View {
     let isSelected: Bool
     let isHovered: Bool
     let onTap: () -> Void
+    let onDelete: () -> Void
+    let onIgnoreApp: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -165,6 +169,21 @@ struct ClipboardItemRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())
         .onTapGesture { onTap() }
+        .contextMenu {
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("删除", systemImage: "trash")
+            }
+
+            Divider()
+
+            Button {
+                onIgnoreApp()
+            } label: {
+                Label("忽略当前应用", systemImage: "eye.slash")
+            }
+        }
         .help(item.briefText)
     }
 
