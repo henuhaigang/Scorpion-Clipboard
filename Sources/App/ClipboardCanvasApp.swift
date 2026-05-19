@@ -37,33 +37,9 @@ struct ScorpionClipboardApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("ScorpionClipboard", systemImage: "clipboard.fill") {
-            Text("历史记录: \(viewModel.itemCount) 条")
-                .font(.headline)
-            Divider()
-            Button("显示面板") {
-                panelController.toggle()
-            }
-            .keyboardShortcut("o", modifiers: .command)
-            Button("清空历史") {
-                viewModel.clearHistory()
-            }
-            Divider()
-            SettingsLink {
-                Text("偏好设置...")
-            }
-            .keyboardShortcut(",", modifiers: .command)
-            Divider()
-            Button("退出") {
-                NSApp.terminate(nil)
-            }
-            .keyboardShortcut("q", modifiers: .command)
-        }
-
         Settings {
             SettingsView(settings: settings, ignoreListManager: ignoreListManager)
                 .onAppear {
-                    // Ensure settings window is interactive
                     NSApp.setActivationPolicy(.regular)
                     NSApp.activate(ignoringOtherApps: true)
                 }

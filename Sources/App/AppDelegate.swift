@@ -68,10 +68,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let menu = NSMenu()
 
-        // Shortcut info
-        let shortcutText = Self.currentShortcutText()
-        let shortcutItem = NSMenuItem(title: "显示面板: \(shortcutText)", action: #selector(showPanel), keyEquivalent: "")
+        // Show panel with configured shortcut
+        let shortcutItem = NSMenuItem(title: "显示面板", action: #selector(showPanel), keyEquivalent: "")
         shortcutItem.target = self
+        shortcutItem.setShortcut(for: .togglePanel)
         menu.addItem(shortcutItem)
 
         menu.addItem(NSMenuItem.separator())
@@ -81,11 +81,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(countItem)
 
         menu.addItem(NSMenuItem.separator())
-
-        let showItem = NSMenuItem(title: "显示面板", action: #selector(showPanel), keyEquivalent: "o")
-        showItem.keyEquivalentModifierMask = [.command]
-        showItem.target = self
-        menu.addItem(showItem)
 
         let clearItem = NSMenuItem(title: "清空历史", action: #selector(clearHistory), keyEquivalent: "")
         clearItem.target = self
@@ -106,14 +101,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(quitItem)
 
         statusItem?.menu = menu
-    }
-
-    @MainActor
-    static func currentShortcutText() -> String {
-        if let shortcut = KeyboardShortcuts.Shortcut(name: .togglePanel) {
-            return shortcut.description
-        }
-        return "未设置"
     }
 
     @objc private func showPanel() {
