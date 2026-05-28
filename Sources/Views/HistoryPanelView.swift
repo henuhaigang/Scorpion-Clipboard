@@ -75,9 +75,8 @@ struct HistoryPanelView: View {
     private var itemList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(spacing: 2) {
-                    let items = Array(viewModel.filteredItems.enumerated())
-                    ForEach(items, id: \.element.id) { index, item in
+                LazyVStack(spacing: 2) {
+                    ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
                         ClipboardItemRow(
                             item: item,
                             index: index + 1,
