@@ -2,6 +2,12 @@ import AppKit
 import SwiftUI
 import KeyboardShortcuts
 
+private final class SilentPanel: NSPanel {
+    override func keyDown(with event: NSEvent) {
+        // Suppress system beep on unhandled key events
+    }
+}
+
 final class PanelController {
     private var panel: NSPanel?
     private let viewModel: HistoryViewModel
@@ -170,7 +176,7 @@ final class PanelController {
     // MARK: - Panel Creation
 
     private func createPanel() {
-        let panel = NSPanel(
+        let panel = SilentPanel(
             contentRect: .zero,
             styleMask: [.titled, .closable, .resizable, .nonactivatingPanel],
             backing: .buffered,

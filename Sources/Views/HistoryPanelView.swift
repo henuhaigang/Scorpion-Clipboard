@@ -75,8 +75,9 @@ struct HistoryPanelView: View {
     private var itemList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: 2) {
-                    ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
+                VStack(spacing: 2) {
+                    let items = Array(viewModel.filteredItems.enumerated())
+                    ForEach(items, id: \.element.id) { index, item in
                         ClipboardItemRow(
                             item: item,
                             index: index + 1,
@@ -158,10 +159,13 @@ struct ClipboardItemRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            indexBadge
+            Text(verbatim: "\(index)")
+                .font(.system(.caption, design: .rounded, weight: .bold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 24, height: 24)
+                .background(Circle().fill(Color.accentColor.opacity(0.15)))
             contentPreview
             Spacer()
-            shortcutHint
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -190,15 +194,14 @@ struct ClipboardItemRow: View {
     // MARK: - Index Badge
 
     private var indexBadge: some View {
-        ZStack {
-            Circle()
-                .fill(index <= 9 ? Color.accentColor.opacity(0.15) : Color.clear)
-                .frame(width: 24, height: 24)
-
-            Text(index <= 9 ? "\(index % 10)" : "")
-                .font(.system(.caption, design: .rounded, weight: .bold))
-                .foregroundStyle(index <= 9 ? Color.accentColor : .clear)
-        }
+        Text(verbatim: "\(index)")
+            .font(.system(.caption, design: .rounded, weight: .bold))
+            .foregroundStyle(index <= 9 ? Color.accentColor : .secondary)
+            .frame(width: 24, height: 24)
+            .background(
+                Circle()
+                    .fill(index <= 9 ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.12))
+            )
     }
 
     // MARK: - Content Preview

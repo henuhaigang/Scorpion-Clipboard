@@ -92,7 +92,7 @@ Scripts/
 | PanelController.swift | `PanelController` | `toggle/show/close`; 4 种定位模式; 键盘事件(local+global monitor) |
 | HistoryViewModel.swift | `HistoryViewModel` (@Observable) | `filteredItems/pasteItem/deleteItem/savePreviousApp`; 搜索 200ms 防抖 |
 | HistoryPanelView.swift | `HistoryPanelView` (View) | 380x500, VisualEffectBlur 背景, ScrollViewReader |
-| HistoryPanelView.swift | `ClipboardItemRow` (View) | 序号徽章 + 内容预览 + 右键菜单 |
+| HistoryPanelView.swift | `ClipboardItemRow` (View) | 序号徽章(所有条目) + 内容预览 + 右键菜单 |
 | SettingsView.swift | `SettingsView` (View) | 450x350, 通用/忽略 两个 Tab |
 | SettingsView.swift | `AppPickerSheet` (View) | 运行中 App 选择器 |
 
@@ -110,6 +110,9 @@ swift package clean          # 清理
 - 面板打开时按 1-9/0 直接粘贴，无需 Cmd 修饰
 - 键盘导航: ↑↓ 选择, Enter 粘贴, Delete 删除, Esc 关闭
 - 失焦自动隐藏面板 (`hidesOnDeactivate = false`, 手动管理可见性)
+- 所有条目显示蓝色圆形序号徽章（1, 2, ..., N）
+- 空白内容（纯空格/换行）不录入历史
+- SilentPanel 子类抑制未处理按键的系统提示音
 - 图片只存缩略图（100px TIFF），原数据不保留
 - 忽略列表通过 bundleID 匹配前台应用
 - 粘贴流程: 暂停监听 → 写剪贴板 → 激活目标 App(最多 16 次×50ms) → CGEvent Cmd+V

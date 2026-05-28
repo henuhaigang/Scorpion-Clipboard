@@ -14,6 +14,7 @@ description: Development conventions and patterns for ScorpionClipboard macOS ap
 
 ## AppKit Bridging
 
+- `SilentPanel` (NSPanel subclass) overrides `keyDown` to suppress system beep
 - NSPanel with `.nonactivatingPanel` style, `.floating` level
 - Set `hidesOnDeactivate = false` — manage visibility manually
 - Use `NSWindow.didResignKeyNotification` for auto-hide
@@ -24,6 +25,7 @@ description: Development conventions and patterns for ScorpionClipboard macOS ap
 
 - Poll `NSPasteboard.general.changeCount` every 0.5s via Timer
 - Type priority: fileURL → tiff → png → rtf → string
+- Skip empty/whitespace-only text and RTF content
 - Pause monitoring during paste operations to avoid re-capture
 - Generate thumbnails at 100x100 px, store as TIFF Data (`tiffRepresentation`)
 
@@ -50,7 +52,8 @@ description: Development conventions and patterns for ScorpionClipboard macOS ap
 ## View Components
 
 - `HistoryPanelView`: 380x500 frame, `VisualEffectBlur` background (.sheet material, .behindWindow blending)
-- `ClipboardItemRow`: indexBadge (1-9 circle) + contentPreview + context menu (delete, ignore app)
+- Item list uses `VStack` (not LazyVStack) to ensure all index badges render correctly
+- `ClipboardItemRow`: blue circle index badge (all items) + contentPreview + context menu (delete, ignore app)
 - `SettingsView`: 450x350, `TabView` with General tab + Ignore tab
 - `AppPickerSheet`: 400x400, lists running apps via `IgnoreListManager.runningApps()`
 

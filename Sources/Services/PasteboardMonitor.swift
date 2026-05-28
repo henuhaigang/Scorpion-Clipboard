@@ -73,6 +73,7 @@ final class PasteboardMonitor {
 
         if types.contains(.rtf), let data = pasteboard.data(forType: .rtf) {
             let text = pasteboard.string(forType: .string) ?? ""
+            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
             let fullTextData = text.data(using: .utf8)
             return ClipboardItem(
                 type: .rtf,
@@ -82,7 +83,7 @@ final class PasteboardMonitor {
             )
         }
 
-        if types.contains(.string), let text = pasteboard.string(forType: .string) {
+        if types.contains(.string), let text = pasteboard.string(forType: .string), !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let fullTextData = text.data(using: .utf8)
             return ClipboardItem(
                 type: .text,
