@@ -52,7 +52,7 @@ struct HistoryPanelView: View {
             ))
             .textFieldStyle(.plain)
             .font(.callout)
- 
+
             if !viewModel.searchText.isEmpty {
                 Button {
                     viewModel.updateSearch("")
@@ -74,30 +74,44 @@ struct HistoryPanelView: View {
 
     private var itemList: some View {
         ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(spacing: 2) {
-                    ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
+            List {
+                ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
+                    Button {
+                        viewModel.pasteItem(item)
+                        onDismiss()
+                    } label: {
                         ClipboardItemRow(
                             item: item,
                             index: index + 1,
                             isSelected: viewModel.selectedRowIndex == index,
-                            isHovered: hoveredItem?.id == item.id,
-                            onTap: {
-                                viewModel.pasteItem(item)
-                                onDismiss()
-                            },
-                            onDelete: { viewModel.deleteItem(item) },
-                            onIgnoreApp: { viewModel.ignoreCurrentApp() }
+                            isHovered: hoveredItem?.id == item.id
                         )
                         .onHover { hovering in
                             hoveredItem = hovering ? item : nil
                         }
-                        .id(item.id)
                     }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            viewModel.deleteItem(item)
+                        } label: {
+                            Label("删除", systemImage: "trash")
+                        }
+
+                        Divider()
+
+                        Button {
+                            viewModel.ignoreCurrentApp()
+                        } label: {
+                            Label("忽略当前应用", systemImage: "eye.slash")
+                        }
+                    }
+                    .id(item.id)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .onChange(of: viewModel.selectedRowIndex) { _, newValue in
                 guard newValue >= 0, newValue < viewModel.filteredItems.count else { return }
                 let targetId = viewModel.filteredItems[newValue].id
@@ -152,9 +166,6 @@ struct ClipboardItemRow: View {
     let index: Int
     let isSelected: Bool
     let isHovered: Bool
-    let onTap: () -> Void
-    let onDelete: () -> Void
-    let onIgnoreApp: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -170,23 +181,6 @@ struct ClipboardItemRow: View {
         .padding(.vertical, 10)
         .background(rowBackground)
         .clipShape(RoundedRectangle(cornerRadius: 8))
-        .contentShape(Rectangle())
-        .onTapGesture { onTap() }
-        .contextMenu {
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Label("删除", systemImage: "trash")
-            }
-
-            Divider()
-
-            Button {
-                onIgnoreApp()
-            } label: {
-                Label("忽略当前应用", systemImage: "eye.slash")
-            }
-        }
         .help(item.fullText ?? item.briefText)
     }
 
