@@ -74,24 +74,27 @@ struct HistoryPanelView: View {
 
     private var itemList: some View {
         ScrollViewReader { proxy in
-            List {
+            List(selection: Binding(
+                get: { viewModel.selectedRowIndex },
+                set: { newValue in
+                    guard let index = newValue, index < viewModel.filteredItems.count else { return }
+                    viewModel.selectedRowIndex = index
+                    let item = viewModel.filteredItems[index]
+                    viewModel.pasteItem(item)
+                    onDismiss()
+                }
+            )) {
                 ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
-                    Button {
-                        viewModel.pasteItem(item)
-                        onDismiss()
-                    } label: {
-                        ClipboardItemRow(
-                            item: item,
-                            index: index + 1,
-                            isSelected: viewModel.selectedRowIndex == index,
-                            isHovered: hoveredItem?.id == item.id
-                        )
-                        .onHover { hovering in
-                            hoveredItem = hovering ? item : nil
-                        }
+                    ClipboardItemRow(
+                        item: item,
+                        index: index + 1,
+                        isSelected: viewModel.selectedRowIndex == index,
+                        isHovered: hoveredItem?.id == item.id
+                    )
+                    .tag(index)
+                    .onHover { hovering in
+                        hoveredItem = hovering ? item : nil
                     }
-                    .buttonStyle(.plain)
-                    .contentShape(Rectangle())
                     .contextMenu {
                         Button(role: .destructive) {
                             viewModel.deleteItem(item)
