@@ -174,8 +174,12 @@ final class HistoryViewModel {
             if let data = item.rtfData {
                 pasteboard.setData(data, forType: .rtf)
                 print("[ViewModel] writeToPasteboard: rtf, size=\(data.count)")
+            } else if let text = item.fullText {
+                pasteboard.setString(text, forType: .string)
+                print("[ViewModel] writeToPasteboard: rtf data missing, fallback to text, length=\(text.count)")
             } else {
-                print("[ViewModel] writeToPasteboard: rtf, NO DATA!")
+                pasteboard.setString(item.briefText, forType: .string)
+                print("[ViewModel] writeToPasteboard: rtf data missing, fallback to briefText")
             }
         case .image:
             if let data = item.rawData {
