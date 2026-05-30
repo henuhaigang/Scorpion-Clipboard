@@ -74,24 +74,20 @@ struct HistoryPanelView: View {
 
     private var itemList: some View {
         ScrollViewReader { proxy in
-            List(selection: Binding(
-                get: { viewModel.selectedRowIndex },
-                set: { newValue in
-                    guard let index = newValue, index < viewModel.filteredItems.count else { return }
-                    viewModel.selectedRowIndex = index
-                    let item = viewModel.filteredItems[index]
-                    viewModel.pasteItem(item)
-                    onDismiss()
-                }
-            )) {
+            List {
                 ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
-                    ClipboardItemRow(
-                        item: item,
-                        index: index + 1,
-                        isSelected: viewModel.selectedRowIndex == index,
-                        isHovered: hoveredItem?.id == item.id
-                    )
-                    .tag(index)
+                    ClickableRow {
+                        viewModel.selectedRowIndex = index
+                        viewModel.pasteItem(item)
+                        onDismiss()
+                    } content: {
+                        ClipboardItemRow(
+                            item: item,
+                            index: index + 1,
+                            isSelected: viewModel.selectedRowIndex == index,
+                            isHovered: hoveredItem?.id == item.id
+                        )
+                    }
                     .onHover { hovering in
                         hoveredItem = hovering ? item : nil
                     }
@@ -309,5 +305,39 @@ struct VisualEffectBlur: NSViewRepresentable {
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
         nsView.material = material
         nsView.blendingMode = blendingMode
+    }
+}
+
+// MARK: - Clickable Row (AppKit-level click handling)
+
+struct ClickableRow<Content: View>: NSViewRepresentable {
+    let action: () -> Void
+    @ViewBuilder let content: () -> Content
+
+    func makeNSView(context: Context) -> NSHostingView<Content> {
+        let hosting = NSHostingView(rootView: content())
+        hosting.translatesAutoresizingMaskIntoConstraints = false
+        let click = NSClickGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.clicked))
+        click.buttonMask = 1 << 0
+        hosting.addGestureRecognizer(click)
+        return hosting
+    }
+
+    func updateNSView(_ nsView: NSHostingView<Content>, context: Context) {
+        nsView.rootView = content()
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(action: action)
+    }
+
+    class Coordinator {
+        let action: () -> Void
+        init(action: @escaping () -> Void) {
+            self.action = action
+        }
+        @objc func clicked() {
+            action()
+        }
     }
 }

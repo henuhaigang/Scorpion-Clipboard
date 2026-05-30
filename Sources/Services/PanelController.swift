@@ -154,8 +154,10 @@ final class PanelController {
         // Enter: paste selected item
         if event.keyCode == 36 {
             let count = viewModel.filteredItems.count
+            print("[PanelController] Enter pressed, selectedRowIndex=\(viewModel.selectedRowIndex), count=\(count)")
             if count > 0, viewModel.selectedRowIndex < count {
                 let item = viewModel.filteredItems[viewModel.selectedRowIndex]
+                print("[PanelController] Pasting item at index \(viewModel.selectedRowIndex), type=\(item.type), briefText=\(item.briefText)")
                 pasteAndClose(item)
             } else {
                 close()
@@ -167,6 +169,7 @@ final class PanelController {
     }
 
     private func pasteAndClose(_ item: ClipboardItem) {
+        print("[PanelController] pasteAndClose: item.id=\(item.id), type=\(item.type)")
         viewModel.restoreFocusAndPaste(item)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
             self?.close()
@@ -196,6 +199,7 @@ final class PanelController {
             }
         )
         panel.contentView = hostingView
+        panel.setContentSize(NSSize(width: 380, height: 500))
 
         NotificationCenter.default.addObserver(
             forName: NSWindow.didResignKeyNotification,

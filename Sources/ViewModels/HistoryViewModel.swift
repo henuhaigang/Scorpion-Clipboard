@@ -140,6 +140,7 @@ final class HistoryViewModel {
     }
 
     func restoreFocusAndPaste(_ item: ClipboardItem) {
+        print("[ViewModel] restoreFocusAndPaste: item.id=\(item.id), type=\(item.type), briefText=\(item.briefText)")
         pasteboardMonitor.pause()
         writeToPasteboard(item)
 
@@ -168,18 +169,28 @@ final class HistoryViewModel {
         switch item.type {
         case .text:
             pasteboard.setString(item.briefText, forType: .string)
+            print("[ViewModel] writeToPasteboard: text, briefText=\(item.briefText)")
         case .rtf:
             if let data = item.rtfData {
                 pasteboard.setData(data, forType: .rtf)
+                print("[ViewModel] writeToPasteboard: rtf, size=\(data.count)")
+            } else {
+                print("[ViewModel] writeToPasteboard: rtf, NO DATA!")
             }
         case .image:
             if let data = item.rawData {
                 pasteboard.setData(data, forType: .tiff)
+                print("[ViewModel] writeToPasteboard: image, size=\(data.count)")
+            } else {
+                print("[ViewModel] writeToPasteboard: image, NO DATA!")
             }
         case .fileURL:
             if let path = item.filePath {
                 let url = URL(fileURLWithPath: path)
                 pasteboard.writeObjects([url as NSURL])
+                print("[ViewModel] writeToPasteboard: fileURL, path=\(path)")
+            } else {
+                print("[ViewModel] writeToPasteboard: fileURL, NO PATH!")
             }
         }
     }
@@ -246,7 +257,7 @@ final class HistoryViewModel {
             return
         }
         let pid = frontmost.processIdentifier
-        print("[ViewModel] simulatePaste: target=\(String(describing: frontmost.localizedName)) pid=\(pid), axTrusted=\(AXIsProcessTrusted())")
+        print("[ViewModel] simulatePaste: target=\(String(describing: frontmost.localizedName)) pid=\(pid), axTrusted=\(AXIsProcessTrusted()), frontmostBundle=\(frontmost.bundleIdentifier ?? "?")")
 
         guard AXIsProcessTrusted() else {
             print("[ViewModel] simulatePaste: Accessibility not granted")
