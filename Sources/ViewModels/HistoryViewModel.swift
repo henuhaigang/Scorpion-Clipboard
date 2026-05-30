@@ -175,8 +175,13 @@ final class HistoryViewModel {
                 pasteboard.setData(data, forType: .rtf)
                 print("[ViewModel] writeToPasteboard: rtf, size=\(data.count)")
             } else if let text = item.fullText {
-                pasteboard.setString(text, forType: .string)
-                print("[ViewModel] writeToPasteboard: rtf data missing, fallback to text, length=\(text.count)")
+                if text.hasPrefix("{\\rtf"), let rtfData = text.data(using: .utf8), let decoded = try? NSAttributedString(data: rtfData, options: [.documentType: NSAttributedString.DocumentType.rtf], documentAttributes: nil) {
+                    pasteboard.setString(decoded.string, forType: .string)
+                    print("[ViewModel] writeToPasteboard: rtf data missing, recovered plain text from RTF source, length=\(decoded.string.count)")
+                } else {
+                    pasteboard.setString(text, forType: .string)
+                    print("[ViewModel] writeToPasteboard: rtf data missing, fallback to text, length=\(text.count)")
+                }
             } else {
                 pasteboard.setString(item.briefText, forType: .string)
                 print("[ViewModel] writeToPasteboard: rtf data missing, fallback to briefText")

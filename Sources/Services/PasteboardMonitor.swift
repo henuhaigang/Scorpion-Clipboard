@@ -72,12 +72,17 @@ final class PasteboardMonitor {
         }
 
         if types.contains(.rtf), let data = pasteboard.data(forType: .rtf) {
-            let text = pasteboard.string(forType: .string) ?? ""
-            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
-            let fullTextData = text.data(using: .utf8)
+            let plainText: String
+            if let attributed = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.rtf], documentAttributes: nil) {
+                plainText = attributed.string
+            } else {
+                plainText = pasteboard.string(forType: .string) ?? ""
+            }
+            guard !plainText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+            let fullTextData = plainText.data(using: .utf8)
             return ClipboardItem(
                 type: .rtf,
-                briefText: String(text.prefix(200)),
+                briefText: String(plainText.prefix(200)),
                 rawData: fullTextData,
                 rtfData: data
             )
