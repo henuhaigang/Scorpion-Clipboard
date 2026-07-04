@@ -69,16 +69,23 @@ final class HistoryStore {
         evictBySizeIfNeeded()
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        guard let data = try? encoder.encode(items) else { return }
-        try? data.write(to: storageURL, options: .atomic)
+        guard let plaintext = try? encoder.encode(items),
+              let encrypted = CryptoService.encrypt(plaintext) else { return }
+        try? encrypted.write(to: storageURL, options: .atomic)
     }
 
     private func loadFromDisk() {
         guard fileManager.fileExists(atPath: storageURL.path) else { return }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        guard let data = try? Data(contentsOf: storageURL),
-              let loaded = try? decoder.decode([ClipboardItem].self, from: data) else { return }
+        guard let rawData = try? Data(contentsOf: storageURL) else { return }
+        let plaintext: Data
+        if let decrypted = CryptoService.decrypt(rawData) {
+            plaintext = decrypted
+        } else {
+            plaintext = rawData
+        }
+        guard let loaded = try? decoder.decode([ClipboardItem].self, from: plaintext) else { return }
         items = Array(loaded.prefix(settings.historyLimit))
     }
 }

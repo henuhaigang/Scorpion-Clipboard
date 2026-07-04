@@ -173,6 +173,46 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(decoded.type, original.type)
     }
 
+    // MARK: - CryptoService
+
+    func testEncryptDecryptRoundTrip() {
+        let original = Data("Sensitive clipboard data 🔒".utf8)
+        let encrypted = CryptoService.encrypt(original)
+        XCTAssertNotNil(encrypted)
+        XCTAssertNotEqual(encrypted, original)
+
+        let decrypted = CryptoService.decrypt(encrypted!)
+        XCTAssertNotNil(decrypted)
+        XCTAssertEqual(decrypted, original)
+    }
+
+    func testDecryptCorruptedDataFails() {
+        let garbage = Data([0x00, 0x01, 0x02, 0x03])
+        let result = CryptoService.decrypt(garbage)
+        XCTAssertNil(result)
+    }
+
+    func testHistoryStoreEncryptPersist() {
+        let settings = SettingsModel()
+        settings.persistAfterRestart = true
+        let store = HistoryStore(settings: settings)
+
+        store.clear()
+        store.add(ClipboardItem(type: .text, briefText: "Secret password: abc123"))
+
+        let fileManager = FileManager.default
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let fileURL = appSupport.appendingPathComponent("ScorpionClipboard/history.json")
+
+        let rawData = try? Data(contentsOf: fileURL)
+        XCTAssertNotNil(rawData)
+        if let data = rawData, let content = String(data: data, encoding: .utf8) {
+            XCTAssertFalse(content.contains("Secret password"), "File content should be encrypted, not plaintext")
+        }
+
+        store.clear()
+    }
+
     // MARK: - IgnoreListManager
 
     func testIgnoreListManager() {
