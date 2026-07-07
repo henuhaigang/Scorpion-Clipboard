@@ -49,6 +49,6 @@ enum CryptoService {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
         SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        guard SecItemAdd(query as CFDictionary, nil) == errSecSuccess else { return }
     }
 }

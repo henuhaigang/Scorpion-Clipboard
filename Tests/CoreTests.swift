@@ -1,4 +1,5 @@
 import XCTest
+import Security
 @testable import ScorpionClipboard
 
 final class CoreTests: XCTestCase {
@@ -10,6 +11,21 @@ final class CoreTests: XCTestCase {
         settings.persistAfterRestart = true
         settings.ignoredBundleIDs = []
         settings.panelPosition = .floatingWindow
+    }
+
+    override func tearDown() {
+        super.tearDown()
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "com.scorpion.clipboard.encryption",
+            kSecAttrAccount as String: "history-key"
+        ]
+        SecItemDelete(query as CFDictionary)
+
+        let fm = FileManager.default
+        let dir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            .appendingPathComponent("ScorpionClipboard")
+        try? fm.removeItem(at: dir)
     }
 
     // MARK: - ClipboardItem
