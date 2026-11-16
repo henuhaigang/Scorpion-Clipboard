@@ -1,6 +1,8 @@
 # ScorpionClipboard
 
 macOS 原生剪贴板管理器，支持历史记录、快速粘贴、忽略应用等功能。
+<img width="1910" height="1452" alt="image" src="https://github.com/user-attachments/assets/e05e2ddf-569a-4242-91e4-0896f08cee16" />
+
 
 ## 功能特性
 
